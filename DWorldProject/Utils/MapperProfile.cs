@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using DWorldProject.Data.Entities;
-using DWorldProject.Data.Entities.Account;
 using DWorldProject.Models.Request;
 using DWorldProject.Models.Response;
 
@@ -14,6 +13,10 @@ namespace DWorldProject.Utils
             CreateMap<BlogPost, BlogPostResponseModel>();
             CreateMap<BlogPostRequestModel, BlogPost>();
             CreateMap<BlogPostResponseModel, BlogPost>();
+            CreateMap<UserResponseModel, User>();
+            CreateMap<User, UserResponseModel>();
+            CreateMap<UserBlogPostResponseModel, UserBlogPost>();
+            CreateMap<UserBlogPost, UserBlogPostResponseModel>();
         }
     }
 }

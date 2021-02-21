@@ -7,6 +7,7 @@ namespace DWorldProject.Services
         public T data { get; set; }
         public ServiceResultType resultType { get; set; }
         public String message { get; set; }
+        public int? errorCode { get; set; }
     }
 
     public enum ServiceResultType

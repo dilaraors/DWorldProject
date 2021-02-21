@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Linq;
+using System.Security.Claims;
 using System.Web.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DWorldProject.Controllers
 {
@@ -21,13 +21,13 @@ namespace DWorldProject.Controllers
         [Microsoft.AspNetCore.Mvc.HttpGet("[action]")]
         public int GetUserIdFromContext()
         {
-            var user = HttpContext.User;
-            var userId = user.Claims.FirstOrDefault(c => c.Type == "UserId");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // will give the user's userId
             if (userId != null)
             {
-                return Convert.ToInt32(userId.Value);
+                return Convert.ToInt32(userId);
             }
             return 0;
         }
+
     }
 }

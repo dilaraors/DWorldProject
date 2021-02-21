@@ -20,17 +20,15 @@ namespace DWorldProject.Services
         private readonly IMapper _mapper;
         private readonly ILogger _logger;
         private readonly IBlogPostRepository _blogPostRepository;
-        private readonly IAmazonDynamoDB _amazonDynamoDb;
-        private readonly DynamoDBContext _context;
+        private readonly IAzureService _azureService;
 
         public BlogPostService(IBlogPostRepository blogPostRepository, IMapper mapper,
-            ILogger<BlogPostService> logger, IAmazonDynamoDB amazonDynamoDb)
+            ILogger<BlogPostService> logger, IAzureService azureService)
         {
             _blogPostRepository = blogPostRepository;
             _mapper = mapper;
             _logger = logger;
-            _amazonDynamoDb = amazonDynamoDb;
-            _context = new DynamoDBContext(amazonDynamoDb);
+            _azureService = azureService;
         }
 
         public async Task<ServiceResult<List<BlogPostResponseModel>>> Get()
@@ -42,7 +40,7 @@ namespace DWorldProject.Services
                 var list = _blogPostRepository.FindBy(b => b.IsActive && !b.IsDeleted);
                 foreach (var item in list)
                 {
-                    var image = await GetAzureDataById(item.AWSImageId);
+                    var image = await _azureService.GetAzureDataById(item.AWSImageId);
                     var model = _mapper.Map<BlogPostResponseModel>(item);
                     model.HeaderImageUrl = image[0].HeaderImageURL;
                     model.YouTubeVideoURL = image[0].YouTubeVideoURL;
@@ -67,7 +65,7 @@ namespace DWorldProject.Services
             var serviceResult = new ServiceResult<BlogPostResponseModel>();
             try
             {
-                var image = await GetAzureDataById(id);
+                var image = await _azureService.GetAzureDataById(id);
                 var response = new BlogPostResponseModel();
                 if (id > 0)
                 {
@@ -92,22 +90,6 @@ namespace DWorldProject.Services
             }
 
             return serviceResult;
-        }
-
-        public async Task<Amazon.DynamoDBv2.Model.ScanResponse> GetAzureData(string tableName)
-        {
-            List<string> attributesToGet = new List<string>();
-            var images = Task.Run(async () => await _amazonDynamoDb.ScanAsync(tableName, attributesToGet));
-            return await images;
-        }
-
-        public async Task<List<Image>> GetAzureDataById(int id)
-        {
-            var scanConditions = new List<ScanCondition>();
-            scanConditions.Add(new ScanCondition("Id", ScanOperator.Equal, id));
-
-            var response = Task.Run(async () => await _context.ScanAsync<Image>(scanConditions, null).GetRemainingAsync());
-            return await response;
         }
 
         public ServiceResult<BlogPostResponseModel> Update(BlogPostRequestModel blogPostModel)

@@ -3,15 +3,17 @@ using System;
 using DWorldProject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DWorldProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210206101008_idebtityusertouser")]
+    partial class idebtityusertouser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,36 +105,6 @@ namespace DWorldProject.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("DWorldProject.Data.Entities.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-                });
-
             modelBuilder.Entity("DWorldProject.Data.Entities.Topic", b =>
                 {
                     b.Property<int>("Id")
@@ -182,6 +154,9 @@ namespace DWorldProject.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<string>("IdentityUserId")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -197,9 +172,6 @@ namespace DWorldProject.Migrations
                     b.Property<string>("ProfileImageURL")
                         .HasColumnType("text");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Surname")
                         .HasColumnType("text");
 
@@ -211,9 +183,7 @@ namespace DWorldProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("Users");
+                    b.ToTable("DWUsers");
                 });
 
             modelBuilder.Entity("DWorldProject.Data.Entities.UserBlogPost", b =>
@@ -476,17 +446,6 @@ namespace DWorldProject.Migrations
                         .IsRequired();
 
                     b.Navigation("BlogPost");
-                });
-
-            modelBuilder.Entity("DWorldProject.Data.Entities.User", b =>
-                {
-                    b.HasOne("DWorldProject.Data.Entities.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("DWorldProject.Data.Entities.UserBlogPost", b =>

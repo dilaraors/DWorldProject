@@ -1,6 +1,7 @@
 ﻿using DWorldProject.Models.IyziPay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -26,14 +27,14 @@ namespace DWorldProject.Controllers
 
             return Ok(res);
         }
-        
+
         [HttpPost("[action]")]
         [AllowAnonymous]
         public void Finalize(CheckoutFormFinalizeModel request)
         {
             var res = _checkoutFormSample.Should_Retrieve_Checkout_Form_Result(request);
 
-          //  return Ok(res);
+            //  return Ok(res);
         }
 
     }

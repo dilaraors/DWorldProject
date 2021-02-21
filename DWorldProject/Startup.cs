@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.S3;
 using AutoMapper;
+using DWorldProject.Data.Entities;
 using DWorldProject.Entities;
 using DWorldProject.Models.IyziPay;
 using DWorldProject.Repositories;
@@ -10,13 +11,15 @@ using DWorldProject.Services.Abstact;
 using DWorldProject.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-
+using System.Security.Claims;
 
 namespace DWorldProject
 {
@@ -35,7 +38,7 @@ namespace DWorldProject
             services.AddControllers();
             services.AddAutoMapper(typeof(Startup));
             var origins = new string[] {
-                "http://localhost:5000",
+                "http://localhost:50400",
                 "https://localhost:44325"
              };
 
@@ -67,11 +70,18 @@ namespace DWorldProject
             services.AddAWSService<IAmazonDynamoDB>();
             services.AddAWSService<IAmazonS3>();
 
+            services.AddHttpContextAccessor();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IAzureService, AzureService>();
             services.AddScoped<ICheckoutFormSample, CheckoutFormSample>();
             services.AddScoped<IBlogPostService, BlogPostService>();
             services.AddScoped<IBlogPostRepository, BlogPostRepository>();
+            services.AddScoped<IUserBlogPostRepository, UserBlogPostRepository>();
+            services.AddScoped<IUserBlogPostService, UserBlogPostService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
         }
 

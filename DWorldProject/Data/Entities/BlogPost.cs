@@ -9,6 +9,9 @@ namespace DWorldProject.Data.Entities
         public string Body { get; set; }
         public int SectionId { get; set; }
         public int TopicId { get; set; }
+        public int? UserId { get; set; }
+
+        public User User { get; set; }
         public Topic Topic { get; set; }
         public ICollection<Comment> CommentIds { get; set; }
     }
