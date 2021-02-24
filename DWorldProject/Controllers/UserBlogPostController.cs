@@ -59,5 +59,33 @@ namespace DWorldProject.Controllers
 
             return Ok(new ApiOkResponse(blogPost.data));
         }
+
+        [HttpPost("[action]")]
+        public IActionResult GetBlogPostByTypeExistence([FromBody] UserBlogPostByTypeRequestModel model)
+        {
+
+            var existance = _userBlogPostService.GetBlogPostByTypeExistence(model);
+
+            if (existance == null)
+            {
+                return NotFound(new ApiResponse(404, "No BlogPost Existance is found!"));
+            }
+
+            return Ok(new ApiOkResponse(existance.data));
+        }
+
+        [HttpPost("[action]")]
+        public IActionResult DeleteByType([FromBody] UserBlogPostByTypeRequestModel model)
+        {
+
+            var blogPost = _userBlogPostService.DeleteByType(model);
+
+            if (blogPost == null)
+            {
+                return NotFound(new ApiResponse(404, "No BlogPost is deleted!"));
+            }
+
+            return Ok(new ApiOkResponse(blogPost.data));
+        }
     }
 }

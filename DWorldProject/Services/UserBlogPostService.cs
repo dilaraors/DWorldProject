@@ -73,8 +73,7 @@ namespace DWorldProject.Services
             {
                 var blogPost =
                     _blogPostRepository.GetSingle(b => b.IsActive && !b.IsDeleted && b.Id == request.BlogPostId);
-                var userBlogPostByType = _userBlogPostRepository.GetSingle(b =>
-                    b.IsActive && !b.IsDeleted && b.UserId == request.UserId && b.BlogPostId == request.BlogPostId &&
+                var userBlogPostByType = _userBlogPostRepository.GetSingle(b => b.UserId == request.UserId && b.BlogPostId == request.BlogPostId &&
                     b.BlogType == request.Type);
                 if (userBlogPostByType == null)
                 {
@@ -86,6 +85,13 @@ namespace DWorldProject.Services
                     };
 
                     _userBlogPostRepository.AddWithCommit(userBlogPost);
+                }
+                else if(!userBlogPostByType.IsActive && userBlogPostByType.IsDeleted)
+                {
+                    userBlogPostByType.IsActive = true;
+                    userBlogPostByType.IsDeleted = false;
+
+                    _userBlogPostRepository.UpdateWithCommit(userBlogPostByType);
                 }
 
                 var responseModel = new UserBlogPostByTypeResponseModel()
@@ -120,13 +126,10 @@ namespace DWorldProject.Services
                     b.BlogType == request.Type);
                 if (userBlogPostByType != null)
                 {
-                    var userBlogPost = new UserBlogPost()
-                    {
-                        IsActive = false,
-                        IsDeleted = true
-                    };
+                    userBlogPostByType.IsActive = false;
+                    userBlogPostByType.IsDeleted = true;
 
-                    _userBlogPostRepository.UpdateWithCommit(userBlogPost);
+                    _userBlogPostRepository.UpdateWithCommit(userBlogPostByType);
                 }
 
                 var responseModel = new UserBlogPostByTypeResponseModel()
@@ -158,7 +161,7 @@ namespace DWorldProject.Services
                     b.IsActive && !b.IsDeleted && b.UserId == request.UserId && b.BlogPostId == request.BlogPostId &&
                     b.BlogType == request.Type);
 
-                serviceResult.data = userBlogPostByType != null ? true : false;
+                serviceResult.data = userBlogPostByType != null;
                 serviceResult.resultType = ServiceResultType.Success;
             }
             catch (Exception e)

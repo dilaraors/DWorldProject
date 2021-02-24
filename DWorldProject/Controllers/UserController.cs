@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using DWorldProject.ErrorHandler;
 using DWorldProject.Migrations;
+using DWorldProject.Models.Request;
 using DWorldProject.Services;
 using DWorldProject.Services.Abstact;
 using Microsoft.AspNetCore.Authorization;
@@ -59,6 +60,19 @@ namespace DWorldProject.Controllers
             if (result.resultType == ServiceResultType.Fail)
             {
                 return BadRequest(new ApiResponse(400, "Image could not found!"));
+            }
+
+            return Ok(new ApiOkResponse(result.data));
+        }
+
+        [HttpPost("[action]")]
+        public IActionResult UpdateUserInfo([FromBody]UserRequestModel model)
+        {
+            var result = _userService.UpdateUserInfo(model);
+
+            if (result.resultType == ServiceResultType.Fail)
+            {
+                return BadRequest(new ApiResponse(400, "User could not found!"));
             }
 
             return Ok(new ApiOkResponse(result.data));

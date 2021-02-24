@@ -1,20 +1,18 @@
-﻿using AutoMapper;
-using DWorldProject.Data.Entities;
+﻿using Amazon;
+using Amazon.S3;
+using Amazon.S3.Transfer;
+using AutoMapper;
 using DWorldProject.Models.Response;
 using DWorldProject.Repositories.Abstract;
 using DWorldProject.Services.Abstact;
 using DWorldProject.Utils.ErrorCodes;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Transfer;
-using DWorldProject.Utils;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using DWorldProject.Models.Request;
 
 namespace DWorldProject.Services
 {
@@ -41,7 +39,7 @@ namespace DWorldProject.Services
                 var userEntity = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == id);
                 if (userEntity == null)
                 {
-                    serviceResult.errorCode = (int) UserErrorCodes.UserNotFound;
+                    serviceResult.errorCode = (int)UserErrorCodes.UserNotFound;
                     throw new Exception("User not found!");
                 }
 
@@ -69,7 +67,7 @@ namespace DWorldProject.Services
                 var userEntity = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted);
                 if (userEntity == null)
                 {
-                    serviceResult.errorCode = (int) UserErrorCodes.UserNotFound;
+                    serviceResult.errorCode = (int)UserErrorCodes.UserNotFound;
                     throw new Exception("User not found!");
                 }
 
@@ -148,6 +146,31 @@ namespace DWorldProject.Services
                 serviceResult.resultType = ServiceResultType.Fail;
                 serviceResult.message = e.Message;
                 throw new Exception("Exception@User/GetProfileImage");
+            }
+
+            return serviceResult;
+        }
+
+        public ServiceResult<UserResponseModel> UpdateUserInfo(UserRequestModel model)
+        {
+            var serviceResult = new ServiceResult<UserResponseModel>();
+            try
+            {
+                var user = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == model.Id);
+                user.Name = model.Name;
+                user.Surname = model.Surname;
+                user.UserName = model.UserName;
+                user.UpdatedDate = DateTime.Now;
+
+                _userRepository.UpdateWithCommit(user);
+                serviceResult.data = _mapper.Map<UserResponseModel>(user);
+                serviceResult.resultType = ServiceResultType.Success;
+            }
+            catch (Exception e)
+            {
+                serviceResult.resultType = ServiceResultType.Fail;
+                serviceResult.message = e.Message;
+                throw new Exception("Exception@User/UpdateUserInfo");
             }
 
             return serviceResult;
