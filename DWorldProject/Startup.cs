@@ -1,7 +1,8 @@
+using System;
+using System.Reflection;
 using Amazon.DynamoDBv2;
 using Amazon.S3;
 using AutoMapper;
-using DWorldProject.Data.Entities;
 using DWorldProject.Entities;
 using DWorldProject.Models.IyziPay;
 using DWorldProject.Repositories;
@@ -18,8 +19,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System.Security.Claims;
+using Serilog;
+using Serilog.Sinks.Elasticsearch;
 
 namespace DWorldProject
 {
@@ -35,11 +38,21 @@ namespace DWorldProject
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Elasticsearch(ConfigureElasticSink(Configuration, environment))
+                .Enrich.WithProperty("Environment", environment)
+                .ReadFrom.Configuration(Configuration)
+                .CreateLogger();
+
             services.AddControllers();
             services.AddAutoMapper(typeof(Startup));
             var origins = new string[] {
                 "http://localhost:50400",
-                "https://localhost:44325"
+                "https://localhost:44325",
+                "http://localhost:4200",
              };
 
             services.AddSwaggerGen(c =>
@@ -83,15 +96,22 @@ namespace DWorldProject
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ITopicRepository, TopicRepository>();
+            services.AddScoped<ITopicService, TopicService>();
+            services.AddScoped<IElasticSearchService, ElasticSearchService>();
+            services.AddScoped<IElasticLogService, ElasticLogService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            loggerFactory.AddSerilog();
 
             app.UseHttpsRedirection();
 
@@ -106,6 +126,7 @@ namespace DWorldProject
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
             });
 
+           
             //app.UseStaticFiles();
 
             //app.UseSpaStaticFiles();
@@ -131,6 +152,16 @@ namespace DWorldProject
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private static ElasticsearchSinkOptions ConfigureElasticSink(IConfiguration configuration, string environment)
+        {
+            return new ElasticsearchSinkOptions(new Uri(configuration["Elasticsearch:URL"]))
+            {
+                AutoRegisterTemplate = true,
+                IndexFormat =
+                    $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}"
+            };
         }
     }
 }

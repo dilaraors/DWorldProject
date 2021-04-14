@@ -43,7 +43,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost is found!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
 
         [HttpGet("[action]/{type}/{userId}")]
@@ -57,7 +57,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost is found!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
 
         [HttpPost("[action]")]
@@ -71,7 +71,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost Existance is found!"));
             }
 
-            return Ok(new ApiOkResponse(existance.data));
+            return Ok(new ApiOkResponse(existance.Data));
         }
 
         [HttpPost("[action]")]
@@ -85,7 +85,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost is deleted!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
     }
 }

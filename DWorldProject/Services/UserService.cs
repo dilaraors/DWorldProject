@@ -39,20 +39,20 @@ namespace DWorldProject.Services
                 var userEntity = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == id);
                 if (userEntity == null)
                 {
-                    serviceResult.errorCode = (int)UserErrorCodes.UserNotFound;
+                    serviceResult.ErrorCode = (int)UserErrorCodes.UserNotFound;
                     throw new Exception("User not found!");
                 }
 
                 var userModel = _mapper.Map<UserResponseModel>(userEntity);
 
-                serviceResult.data = userModel;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = userModel;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception:User/GetById");
-                serviceResult.message = e.Message;
-                serviceResult.resultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
             }
 
             return serviceResult;
@@ -67,20 +67,20 @@ namespace DWorldProject.Services
                 var userEntity = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted);
                 if (userEntity == null)
                 {
-                    serviceResult.errorCode = (int)UserErrorCodes.UserNotFound;
+                    serviceResult.ErrorCode = (int)UserErrorCodes.UserNotFound;
                     throw new Exception("User not found!");
                 }
 
                 var userModel = _mapper.Map<UserResponseModel>(userEntity);
 
-                serviceResult.data = userModel;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = userModel;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception:User/GetById");
-                serviceResult.message = e.Message;
-                serviceResult.resultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
             }
 
             return serviceResult;
@@ -115,16 +115,16 @@ namespace DWorldProject.Services
                         var user = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == id);
                         user.ProfileImageURL = imageUrl;
                         _userRepository.UpdateWithCommit(user);
-                        serviceResult.data = true;
-                        serviceResult.resultType = ServiceResultType.Success;
+                        serviceResult.Data = true;
+                        serviceResult.ResultType = ServiceResultType.Success;
                     }
                 }
             }
             catch (Exception e)
             {
-                serviceResult.data = false;
-                serviceResult.resultType = ServiceResultType.Fail;
-                serviceResult.message = e.Message;
+                serviceResult.Data = false;
+                serviceResult.ResultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
                 throw new Exception("Exception@User/UploadProfileImageToS3");
             }
 
@@ -138,13 +138,13 @@ namespace DWorldProject.Services
             {
                 var userProfileImage = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == id)
                     .ProfileImageURL;
-                serviceResult.data = userProfileImage;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = userProfileImage;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
-                serviceResult.resultType = ServiceResultType.Fail;
-                serviceResult.message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
                 throw new Exception("Exception@User/GetProfileImage");
             }
 
@@ -163,13 +163,13 @@ namespace DWorldProject.Services
                 user.UpdatedDate = DateTime.Now;
 
                 _userRepository.UpdateWithCommit(user);
-                serviceResult.data = _mapper.Map<UserResponseModel>(user);
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = _mapper.Map<UserResponseModel>(user);
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
-                serviceResult.resultType = ServiceResultType.Fail;
-                serviceResult.message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
                 throw new Exception("Exception@User/UpdateUserInfo");
             }
 

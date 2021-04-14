@@ -101,7 +101,7 @@ namespace DWorldProject.Models.IyziPay
             IyziPayInitializeService checkoutFormInitialize = IyziPayInitializeService.Create(request, opt);
 
             var res = checkoutFormInitialize;
-            serviceResult.data = res;
+            serviceResult.Data = res;
             return serviceResult;
         }
 
@@ -122,7 +122,7 @@ namespace DWorldProject.Models.IyziPay
 
             IyziPayFinalizeService checkoutForm = IyziPayFinalizeService.Retrieve(request, opt);
 
-            serviceResult.data = checkoutForm;
+            serviceResult.Data = checkoutForm;
             return serviceResult;
         }
     }

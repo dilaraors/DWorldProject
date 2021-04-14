@@ -36,7 +36,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No User is found!"));
             }
 
-            return Ok(new ApiOkResponse(user.data));
+            return Ok(new ApiOkResponse(user.Data));
         }
 
         [HttpPost("[action]/{id}")]
@@ -44,12 +44,12 @@ namespace DWorldProject.Controllers
         {
             var result = await _userService.UploadProfileImageToS3(file, id);
 
-            if (result.resultType == ServiceResultType.Fail)
+            if (result.ResultType == ServiceResultType.Fail)
             {
                 return BadRequest(new ApiResponse(400, "Image could not uploaded!"));
             }
 
-            return Ok(new ApiOkResponse(result.data));
+            return Ok(new ApiOkResponse(result.Data));
         }
 
         [HttpGet("[action]/{id}")]
@@ -57,12 +57,12 @@ namespace DWorldProject.Controllers
         {
             var result = _userService.GetProfileImage(id);
 
-            if (result.resultType == ServiceResultType.Fail)
+            if (result.ResultType == ServiceResultType.Fail)
             {
                 return BadRequest(new ApiResponse(400, "Image could not found!"));
             }
 
-            return Ok(new ApiOkResponse(result.data));
+            return Ok(new ApiOkResponse(result.Data));
         }
 
         [HttpPost("[action]")]
@@ -70,12 +70,12 @@ namespace DWorldProject.Controllers
         {
             var result = _userService.UpdateUserInfo(model);
 
-            if (result.resultType == ServiceResultType.Fail)
+            if (result.ResultType == ServiceResultType.Fail)
             {
                 return BadRequest(new ApiResponse(400, "User could not found!"));
             }
 
-            return Ok(new ApiOkResponse(result.data));
+            return Ok(new ApiOkResponse(result.Data));
         }
 
     }

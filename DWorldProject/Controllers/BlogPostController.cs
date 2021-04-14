@@ -33,7 +33,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost is found!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
 
         [HttpGet("[action]/{id}")]
@@ -46,7 +46,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost is found!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
 
         // PUT: api/BlogPosts/Update/5
@@ -60,21 +60,21 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost is found!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
 
         // POST: api/BlogPosts/Add
         [HttpPost("[action]")]
-        public IActionResult Add([FromBody] BlogPostRequestModel blogPostModel)
+        public async Task<IActionResult> Add([FromBody] BlogPostRequestModel blogPostModel)
         {
-            var blogPost = _blogPostService.Add(blogPostModel);
+            var blogPost = await _blogPostService.Add(blogPostModel);
 
             if (blogPost == null)
             {
                 return NotFound(new ApiResponse(404, "No BlogPost is found!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
 
         // DELETE: api/BlogPosts/Delete/5
@@ -88,7 +88,7 @@ namespace DWorldProject.Controllers
                 return NotFound(new ApiResponse(404, "No BlogPost is found!"));
             }
 
-            return Ok(new ApiOkResponse(blogPost.data));
+            return Ok(new ApiOkResponse(blogPost.Data));
         }
 
 

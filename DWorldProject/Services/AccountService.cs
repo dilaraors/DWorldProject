@@ -76,13 +76,13 @@ namespace DWorldProject.Services
                     throw new Exception(error.Description);
                 }
 
-                serviceResult.data = model;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = model;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception ex)
             {
-                serviceResult.resultType = ServiceResultType.Fail;
-                serviceResult.message = ex.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
+                serviceResult.Message = ex.Message;
             }
 
             return serviceResult;
@@ -137,19 +137,19 @@ namespace DWorldProject.Services
                     var userViewModel = _mapper.Map<UserResponseModel>(userEntity);
                     var jwtToken = new JwtSecurityTokenHandler().WriteToken(CreateJwt(userViewModel));
 
-                    serviceResult.data = new LoginModel()
+                    serviceResult.Data = new LoginModel()
                     {
                         JwtToken = jwtToken,
                         User = userViewModel
                     };
-                    serviceResult.resultType = ServiceResultType.Success;
+                    serviceResult.ResultType = ServiceResultType.Success;
                 }
 
             }
             catch (Exception ex)
             {
-                serviceResult.resultType = ServiceResultType.Fail;
-                serviceResult.message = ex.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
+                serviceResult.Message = ex.Message;
             }
 
             return serviceResult;
@@ -162,14 +162,14 @@ namespace DWorldProject.Services
             {
                 await _signInManager.SignOutAsync();
 
-                serviceResult.data = true;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = true;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception ex)
             {
-                serviceResult.data = false;
-                serviceResult.resultType = ServiceResultType.Fail;
-                serviceResult.message = ex.Message;
+                serviceResult.Data = false;
+                serviceResult.ResultType = ServiceResultType.Fail;
+                serviceResult.Message = ex.Message;
             }
 
             return serviceResult;

@@ -1,17 +1,16 @@
-﻿using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
-using AutoMapper;
+﻿using AutoMapper;
 using DWorldProject.Data.Entities;
+using DWorldProject.Models.Request;
 using DWorldProject.Models.Response;
 using DWorldProject.Repositories.Abstract;
 using DWorldProject.Services.Abstact;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DWorldProject.Models.Request;
+using DWorldProject.Models.ViewModel;
+using DWorldProject.Utils.Enums;
 
 namespace DWorldProject.Services
 {
@@ -22,17 +21,18 @@ namespace DWorldProject.Services
         private readonly IUserBlogPostRepository _userBlogPostRepository;
         private readonly IBlogPostRepository _blogPostRepository;
         private readonly IAzureService _azureService;
-        private readonly IUserService _userService;
+        private readonly IElasticLogService _elasticLogService;
 
         public UserBlogPostService(IUserBlogPostRepository userBlogPostRepository, IMapper mapper,
-            ILogger<BlogPostService> logger, IAzureService azureService, IUserService userService, IBlogPostRepository blogPostRepository)
+            ILogger<BlogPostService> logger, IAzureService azureService, IBlogPostRepository blogPostRepository,
+            IElasticLogService elasticLogService)
         {
             _userBlogPostRepository = userBlogPostRepository;
             _mapper = mapper;
             _logger = logger;
             _azureService = azureService;
-            _userService = userService;
             _blogPostRepository = blogPostRepository;
+            _elasticLogService = elasticLogService;
         }
 
         public async Task<ServiceResult<List<UserBlogPostResponseModel>>> GetByType(int blogType, int userId)
@@ -53,14 +53,14 @@ namespace DWorldProject.Services
                     modelList.Add(model);
                 }
 
-                serviceResult.data = modelList;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = modelList;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception:UserBlogPost/GetByType");
-                serviceResult.message = e.Message;
-                serviceResult.resultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
             }
 
             return serviceResult;
@@ -86,7 +86,7 @@ namespace DWorldProject.Services
 
                     _userBlogPostRepository.AddWithCommit(userBlogPost);
                 }
-                else if(!userBlogPostByType.IsActive && userBlogPostByType.IsDeleted)
+                else if (!userBlogPostByType.IsActive && userBlogPostByType.IsDeleted)
                 {
                     userBlogPostByType.IsActive = true;
                     userBlogPostByType.IsDeleted = false;
@@ -101,14 +101,19 @@ namespace DWorldProject.Services
                     Type = request.Type
                 };
 
-                serviceResult.data = responseModel;
-                serviceResult.resultType = ServiceResultType.Success;
+                var operationType = request.Type == (int) BlogType.Liked
+                    ? OperationType.Like
+                    : (request.Type == (int) BlogType.Saved ?  OperationType.Save : OperationType.Comment);
+
+                _elasticLogService.LogChange(operationType, blogPost);
+                serviceResult.Data = responseModel;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception:UserBlogPost/GetByType");
-                serviceResult.message = e.Message;
-                serviceResult.resultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
             }
 
             return serviceResult;
@@ -139,14 +144,14 @@ namespace DWorldProject.Services
                     Type = request.Type
                 };
 
-                serviceResult.data = responseModel;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = responseModel;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception:UserBlogPost/GetByType");
-                serviceResult.message = e.Message;
-                serviceResult.resultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
             }
 
             return serviceResult;
@@ -161,14 +166,14 @@ namespace DWorldProject.Services
                     b.IsActive && !b.IsDeleted && b.UserId == request.UserId && b.BlogPostId == request.BlogPostId &&
                     b.BlogType == request.Type);
 
-                serviceResult.data = userBlogPostByType != null;
-                serviceResult.resultType = ServiceResultType.Success;
+                serviceResult.Data = userBlogPostByType != null;
+                serviceResult.ResultType = ServiceResultType.Success;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception:UserBlogPost/GetByType");
-                serviceResult.message = e.Message;
-                serviceResult.resultType = ServiceResultType.Fail;
+                serviceResult.Message = e.Message;
+                serviceResult.ResultType = ServiceResultType.Fail;
             }
 
             return serviceResult;

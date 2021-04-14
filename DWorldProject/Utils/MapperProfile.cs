@@ -17,6 +17,7 @@ namespace DWorldProject.Utils
             CreateMap<User, UserResponseModel>();
             CreateMap<UserBlogPostResponseModel, UserBlogPost>();
             CreateMap<UserBlogPost, UserBlogPostResponseModel>();
+            CreateMap<Topic, TopicResponseModel>();
         }
     }
 }

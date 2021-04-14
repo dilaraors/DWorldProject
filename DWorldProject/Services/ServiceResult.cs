@@ -4,10 +4,10 @@ namespace DWorldProject.Services
 {
     public class ServiceResult<T>
     {
-        public T data { get; set; }
-        public ServiceResultType resultType { get; set; }
-        public String message { get; set; }
-        public int? errorCode { get; set; }
+        public T Data { get; set; }
+        public ServiceResultType ResultType { get; set; }
+        public String Message { get; set; }
+        public int? ErrorCode { get; set; }
     }
 
     public enum ServiceResultType

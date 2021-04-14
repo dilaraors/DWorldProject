@@ -28,36 +28,36 @@ namespace DWorldProject.Controllers
         public async Task<IActionResult> Login([FromBody] UserRequestModel model)
         {
             var result = await _accountService.Login(model);
-            if (result.resultType == ServiceResultType.Fail)
+            if (result.ResultType == ServiceResultType.Fail)
             {
                 return NotFound(result);
             }
 
-            return Ok(new ApiOkResponse(result.data));
+            return Ok(new ApiOkResponse(result.Data));
         }
         
         [HttpPost("[action]")]
         public async Task<IActionResult> Register([FromBody]RegisterModel model)
         {
             var result = await _accountService.Register(model);
-            if (result.resultType == ServiceResultType.Fail)
+            if (result.ResultType == ServiceResultType.Fail)
             {
                 return NotFound(result);
             }
 
-            return Ok(new ApiOkResponse(result.data));
+            return Ok(new ApiOkResponse(result.Data));
         }
 
         [HttpPost("[action]")]
         public async Task<IActionResult> Logout()
         {
             var result = await _accountService.Logout();
-            if (result.resultType == ServiceResultType.Fail)
+            if (result.ResultType == ServiceResultType.Fail)
             {
                 return NotFound(result);
             }
 
-            return Ok(new ApiOkResponse(result.data));
+            return Ok(new ApiOkResponse(result.Data));
         }
     }
 }
