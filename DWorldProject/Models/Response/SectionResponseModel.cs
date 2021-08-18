@@ -2,7 +2,7 @@
 
 namespace DWorldProject.Models.Response
 {
-    public class TopicResponseModel: TopicModel
+    public class SectionResponseModel : SectionModel
     {
     }
 }

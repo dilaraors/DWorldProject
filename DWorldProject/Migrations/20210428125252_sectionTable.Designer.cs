@@ -3,15 +3,17 @@ using System;
 using DWorldProject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DWorldProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210428125252_sectionTable")]
+    partial class sectionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,9 +60,6 @@ namespace DWorldProject.Migrations
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("YouTubeVideoURL")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -156,7 +155,6 @@ namespace DWorldProject.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
@@ -187,7 +185,6 @@ namespace DWorldProject.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("SectionId")
@@ -521,7 +518,7 @@ namespace DWorldProject.Migrations
             modelBuilder.Entity("DWorldProject.Data.Entities.Topic", b =>
                 {
                     b.HasOne("DWorldProject.Data.Entities.Section", "Section")
-                        .WithMany("Topics")
+                        .WithMany()
                         .HasForeignKey("SectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -613,11 +610,6 @@ namespace DWorldProject.Migrations
             modelBuilder.Entity("DWorldProject.Data.Entities.BlogPost", b =>
                 {
                     b.Navigation("CommentIds");
-                });
-
-            modelBuilder.Entity("DWorldProject.Data.Entities.Section", b =>
-                {
-                    b.Navigation("Topics");
                 });
 #pragma warning restore 612, 618
         }

@@ -2,7 +2,8 @@
 {
     public enum UserErrorCodes
     {
-        UnknownError = 1000,
-        UserNotFound = 1001
+        IncorrectUsername = 1002,
+        WrongPassword = 1003,
+        AlreadyExists = 1004
     }
 }

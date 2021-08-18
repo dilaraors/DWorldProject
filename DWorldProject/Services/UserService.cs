@@ -39,7 +39,7 @@ namespace DWorldProject.Services
                 var userEntity = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == id);
                 if (userEntity == null)
                 {
-                    serviceResult.ErrorCode = (int)UserErrorCodes.UserNotFound;
+                    serviceResult.ErrorCode = (int)BaseErrorCodes.NotFound;
                     throw new Exception("User not found!");
                 }
 
@@ -67,7 +67,7 @@ namespace DWorldProject.Services
                 var userEntity = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted);
                 if (userEntity == null)
                 {
-                    serviceResult.ErrorCode = (int)UserErrorCodes.UserNotFound;
+                    serviceResult.ErrorCode = (int)BaseErrorCodes.NotFound;
                     throw new Exception("User not found!");
                 }
 
@@ -151,12 +151,12 @@ namespace DWorldProject.Services
             return serviceResult;
         }
 
-        public ServiceResult<UserResponseModel> UpdateUserInfo(UserRequestModel model)
+        public ServiceResult<UserResponseModel> UpdateUserInfo(UserRequestModel model, int userId)
         {
             var serviceResult = new ServiceResult<UserResponseModel>();
             try
             {
-                var user = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == model.Id);
+                var user = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.Id == userId);
                 user.Name = model.Name;
                 user.Surname = model.Surname;
                 user.UserName = model.UserName;

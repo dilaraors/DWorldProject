@@ -13,8 +13,6 @@ using System.Threading.Tasks;
 namespace DWorldProject.Controllers
 {
     [Route("api/[controller]")]
-    [EnableCors("EnableCors")]
-    [Authorize]
     [AllowAnonymous]
     public class AccountController : BaseController
     {
@@ -25,9 +23,9 @@ namespace DWorldProject.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> Login([FromBody] UserRequestModel model)
+        public IActionResult Login([FromBody] UserRequestModel model)
         {
-            var result = await _accountService.Login(model);
+            var result = _accountService.Login(model);
             if (result.ResultType == ServiceResultType.Fail)
             {
                 return NotFound(result);
@@ -37,9 +35,9 @@ namespace DWorldProject.Controllers
         }
         
         [HttpPost("[action]")]
-        public async Task<IActionResult> Register([FromBody]RegisterModel model)
+        public IActionResult Register([FromBody]UserRequestModel model)
         {
-            var result = await _accountService.Register(model);
+            var result = _accountService.Register(model);
             if (result.ResultType == ServiceResultType.Fail)
             {
                 return NotFound(result);
@@ -48,16 +46,16 @@ namespace DWorldProject.Controllers
             return Ok(new ApiOkResponse(result.Data));
         }
 
-        [HttpPost("[action]")]
-        public async Task<IActionResult> Logout()
-        {
-            var result = await _accountService.Logout();
-            if (result.ResultType == ServiceResultType.Fail)
-            {
-                return NotFound(result);
-            }
+        //[HttpPost("[action]")]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    var result = await _accountService.Logout();
+        //    if (result.ResultType == ServiceResultType.Fail)
+        //    {
+        //        return NotFound(result);
+        //    }
 
-            return Ok(new ApiOkResponse(result.Data));
-        }
+        //    return Ok(new ApiOkResponse(result.Data));
+        //}
     }
 }

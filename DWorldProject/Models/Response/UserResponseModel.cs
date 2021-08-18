@@ -5,6 +5,8 @@ namespace DWorldProject.Models.Response
     public class UserResponseModel
     {
         public virtual int Id { get; set; }
+        public virtual int RoleId { get; set; }
+        public virtual string RoleName { get; set; }
         public virtual bool IsDeleted { get; set; }
         public virtual bool IsActive { get; set; }
         public virtual DateTime CreatedDate { get; set; }

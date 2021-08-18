@@ -3,15 +3,17 @@ using System;
 using DWorldProject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DWorldProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210419151829_userPasswordSalt")]
+    partial class userPasswordSalt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,9 +60,6 @@ namespace DWorldProject.Migrations
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("YouTubeVideoURL")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -136,37 +135,6 @@ namespace DWorldProject.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("DWorldProject.Data.Entities.Section", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Sections");
-                });
-
             modelBuilder.Entity("DWorldProject.Data.Entities.Topic", b =>
                 {
                     b.Property<int>("Id")
@@ -187,18 +155,15 @@ namespace DWorldProject.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("SectionId")
+                    b.Property<int>("Section")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("SectionId");
 
                     b.ToTable("Topics");
                 });
@@ -518,17 +483,6 @@ namespace DWorldProject.Migrations
                     b.Navigation("BlogPost");
                 });
 
-            modelBuilder.Entity("DWorldProject.Data.Entities.Topic", b =>
-                {
-                    b.HasOne("DWorldProject.Data.Entities.Section", "Section")
-                        .WithMany("Topics")
-                        .HasForeignKey("SectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Section");
-                });
-
             modelBuilder.Entity("DWorldProject.Data.Entities.User", b =>
                 {
                     b.HasOne("DWorldProject.Data.Entities.Role", "Role")
@@ -613,11 +567,6 @@ namespace DWorldProject.Migrations
             modelBuilder.Entity("DWorldProject.Data.Entities.BlogPost", b =>
                 {
                     b.Navigation("CommentIds");
-                });
-
-            modelBuilder.Entity("DWorldProject.Data.Entities.Section", b =>
-                {
-                    b.Navigation("Topics");
                 });
 #pragma warning restore 612, 618
         }

@@ -4,13 +4,12 @@ using DWorldProject.Models.Request;
 using DWorldProject.Models.Response;
 using DWorldProject.Repositories.Abstract;
 using DWorldProject.Services.Abstact;
+using DWorldProject.Utils.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DWorldProject.Models.ViewModel;
-using DWorldProject.Utils.Enums;
 
 namespace DWorldProject.Services
 {
@@ -20,19 +19,16 @@ namespace DWorldProject.Services
         private readonly ILogger _logger;
         private readonly IUserBlogPostRepository _userBlogPostRepository;
         private readonly IBlogPostRepository _blogPostRepository;
-        private readonly IAzureService _azureService;
-        private readonly IElasticLogService _elasticLogService;
+        private readonly IAmazonService _azureService;
 
         public UserBlogPostService(IUserBlogPostRepository userBlogPostRepository, IMapper mapper,
-            ILogger<BlogPostService> logger, IAzureService azureService, IBlogPostRepository blogPostRepository,
-            IElasticLogService elasticLogService)
+            ILogger<BlogPostService> logger, IAmazonService azureService, IBlogPostRepository blogPostRepository)
         {
             _userBlogPostRepository = userBlogPostRepository;
             _mapper = mapper;
             _logger = logger;
             _azureService = azureService;
             _blogPostRepository = blogPostRepository;
-            _elasticLogService = elasticLogService;
         }
 
         public async Task<ServiceResult<List<UserBlogPostResponseModel>>> GetByType(int blogType, int userId)
@@ -45,10 +41,10 @@ namespace DWorldProject.Services
                 var list = _userBlogPostRepository.AllIncludingAsQueryable(ubp => ubp.BlogPost).Where(ub => ub.IsActive && !ub.IsDeleted && ub.BlogType == blogType && ub.UserId == userId);
                 foreach (var item in list)
                 {
-                    var image = await _azureService.GetAzureDataById(item.BlogPost.AWSImageId);
+                    var image = await _azureService.GetAmazonDataById(item.BlogPost.AWSImageId);
                     var model = _mapper.Map<UserBlogPostResponseModel>(item);
                     model.Id = item.BlogPostId;
-                    model.HeaderImageUrl = image[0].HeaderImageURL;
+                    model.HeaderImageURL = image[0].HeaderImageURL;
                     model.YouTubeVideoURL = image[0].YouTubeVideoURL;
                     modelList.Add(model);
                 }
@@ -66,20 +62,20 @@ namespace DWorldProject.Services
             return serviceResult;
         }
 
-        public ServiceResult<UserBlogPostByTypeResponseModel> AddByType(UserBlogPostByTypeRequestModel request)
+        public ServiceResult<UserBlogPostByTypeResponseModel> AddByType(UserBlogPostByTypeRequestModel request, int userId)
         {
             var serviceResult = new ServiceResult<UserBlogPostByTypeResponseModel>();
             try
             {
                 var blogPost =
                     _blogPostRepository.GetSingle(b => b.IsActive && !b.IsDeleted && b.Id == request.BlogPostId);
-                var userBlogPostByType = _userBlogPostRepository.GetSingle(b => b.UserId == request.UserId && b.BlogPostId == request.BlogPostId &&
+                var userBlogPostByType = _userBlogPostRepository.GetSingle(b => b.UserId == userId && b.BlogPostId == request.BlogPostId &&
                     b.BlogType == request.Type);
                 if (userBlogPostByType == null)
                 {
                     var userBlogPost = new UserBlogPost()
                     {
-                        UserId = request.UserId,
+                        UserId = userId,
                         BlogPostId = blogPost.Id,
                         BlogType = request.Type
                     };
@@ -96,16 +92,15 @@ namespace DWorldProject.Services
 
                 var responseModel = new UserBlogPostByTypeResponseModel()
                 {
-                    UserId = request.UserId,
+                    UserId = userId,
                     BlogPost = blogPost,
                     Type = request.Type
                 };
 
-                var operationType = request.Type == (int) BlogType.Liked
+                var operationType = request.Type == (int)BlogType.Liked
                     ? OperationType.Like
-                    : (request.Type == (int) BlogType.Saved ?  OperationType.Save : OperationType.Comment);
+                    : (request.Type == (int)BlogType.Saved ? OperationType.Save : OperationType.Comment);
 
-                _elasticLogService.LogChange(operationType, blogPost);
                 serviceResult.Data = responseModel;
                 serviceResult.ResultType = ServiceResultType.Success;
             }
@@ -119,7 +114,7 @@ namespace DWorldProject.Services
             return serviceResult;
         }
 
-        public ServiceResult<UserBlogPostByTypeResponseModel> DeleteByType(UserBlogPostByTypeRequestModel request)
+        public ServiceResult<UserBlogPostByTypeResponseModel> DeleteByType(UserBlogPostByTypeRequestModel request, int userId)
         {
             var serviceResult = new ServiceResult<UserBlogPostByTypeResponseModel>();
             try
@@ -127,7 +122,7 @@ namespace DWorldProject.Services
                 var blogPost =
                     _blogPostRepository.GetSingle(b => b.IsActive && !b.IsDeleted && b.Id == request.BlogPostId);
                 var userBlogPostByType = _userBlogPostRepository.GetSingle(b =>
-                    b.IsActive && !b.IsDeleted && b.UserId == request.UserId && b.BlogPostId == request.BlogPostId &&
+                    b.IsActive && !b.IsDeleted && b.UserId == userId && b.BlogPostId == request.BlogPostId &&
                     b.BlogType == request.Type);
                 if (userBlogPostByType != null)
                 {
@@ -139,7 +134,7 @@ namespace DWorldProject.Services
 
                 var responseModel = new UserBlogPostByTypeResponseModel()
                 {
-                    UserId = request.UserId,
+                    UserId = userId,
                     BlogPost = blogPost,
                     Type = request.Type
                 };
@@ -157,13 +152,13 @@ namespace DWorldProject.Services
             return serviceResult;
         }
 
-        public ServiceResult<bool> GetBlogPostByTypeExistence(UserBlogPostByTypeRequestModel request)
+        public ServiceResult<bool> GetBlogPostByTypeExistence(UserBlogPostByTypeRequestModel request, int userId)
         {
             var serviceResult = new ServiceResult<bool>();
             try
             {
                 var userBlogPostByType = _userBlogPostRepository.GetSingle(b =>
-                    b.IsActive && !b.IsDeleted && b.UserId == request.UserId && b.BlogPostId == request.BlogPostId &&
+                    b.IsActive && !b.IsDeleted && b.UserId == userId && b.BlogPostId == request.BlogPostId &&
                     b.BlogType == request.Type);
 
                 serviceResult.Data = userBlogPostByType != null;

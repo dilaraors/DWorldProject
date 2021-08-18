@@ -1,16 +1,12 @@
-﻿using System.Linq;
-using System.Security.Claims;
-using DWorldProject.Data.Entities;
-using DWorldProject.ErrorHandler;
+﻿using DWorldProject.ErrorHandler;
+using DWorldProject.Models.Request;
 using DWorldProject.Services.Abstact;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
-using DWorldProject.Models.Request;
 
 namespace DWorldProject.Controllers
 {
@@ -22,21 +18,19 @@ namespace DWorldProject.Controllers
     {
         private readonly IUserBlogPostService _userBlogPostService;
         private readonly IAccountService _accountService;
-        private readonly UserManager<IdentityUser> _userManager;
 
-        public UserBlogPostController(IUserBlogPostService userBlogPostService, IAccountService accountService, UserManager<IdentityUser> userManager, 
+        public UserBlogPostController(IUserBlogPostService userBlogPostService, IAccountService accountService,
             IConfiguration configuration) : base(configuration)
         {
             _userBlogPostService = userBlogPostService;
             _accountService = accountService;
-            _userManager = userManager;
         }
 
         [HttpPost("[action]")]
         public IActionResult AddByType([FromBody] UserBlogPostByTypeRequestModel model)
         {
-
-            var blogPost = _userBlogPostService.AddByType(model);
+            var userId = GetUserIdFromContext();
+            var blogPost = _userBlogPostService.AddByType(model, userId);
 
             if (blogPost == null)
             {
@@ -46,10 +40,10 @@ namespace DWorldProject.Controllers
             return Ok(new ApiOkResponse(blogPost.Data));
         }
 
-        [HttpGet("[action]/{type}/{userId}")]
-        public async Task<IActionResult> GetByType(int type, int userId)
+        [HttpGet("[action]/{type}")]
+        public async Task<IActionResult> GetByType(int type)
         {
-
+            var userId = GetUserIdFromContext();
             var blogPost = await _userBlogPostService.GetByType(type, userId);
 
             if (blogPost == null)
@@ -64,7 +58,8 @@ namespace DWorldProject.Controllers
         public IActionResult GetBlogPostByTypeExistence([FromBody] UserBlogPostByTypeRequestModel model)
         {
 
-            var existance = _userBlogPostService.GetBlogPostByTypeExistence(model);
+            var userId = GetUserIdFromContext();
+            var existance = _userBlogPostService.GetBlogPostByTypeExistence(model, userId);
 
             if (existance == null)
             {
@@ -77,8 +72,8 @@ namespace DWorldProject.Controllers
         [HttpPost("[action]")]
         public IActionResult DeleteByType([FromBody] UserBlogPostByTypeRequestModel model)
         {
-
-            var blogPost = _userBlogPostService.DeleteByType(model);
+            var userId = GetUserIdFromContext();
+            var blogPost = _userBlogPostService.DeleteByType(model, userId);
 
             if (blogPost == null)
             {

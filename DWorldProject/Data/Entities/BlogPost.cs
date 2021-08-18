@@ -10,6 +10,7 @@ namespace DWorldProject.Data.Entities
         public int SectionId { get; set; }
         public int TopicId { get; set; }
         public int? UserId { get; set; }
+        public string YouTubeVideoURL { get; set; }
 
         public User User { get; set; }
         public Topic Topic { get; set; }

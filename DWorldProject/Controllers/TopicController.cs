@@ -1,4 +1,5 @@
 ﻿using DWorldProject.ErrorHandler;
+using DWorldProject.Models.ViewModel;
 using DWorldProject.Services;
 using DWorldProject.Services.Abstact;
 using Microsoft.AspNetCore.Authorization;
@@ -26,10 +27,14 @@ namespace DWorldProject.Controllers
         {
             var topic = _topicService.GetById(id);
 
-            if (topic.ResultType == ServiceResultType.Fail)
-            {
-                return NotFound(new ApiResponse(404, "No Topic is found!"));
-            }
+            return Ok(new ApiOkResponse(topic));
+        }
+
+
+        [HttpGet("[action]/{sectionId}")]
+        public IActionResult GetBySectionId([FromRoute] int sectionId)
+        {
+            var topic = _topicService.GetBySectionId(sectionId);
 
             return Ok(new ApiOkResponse(topic));
         }
@@ -39,25 +44,32 @@ namespace DWorldProject.Controllers
         {
             var topics = _topicService.Get();
 
-            if (topics.ResultType == ServiceResultType.Fail)
-            {
-                return NotFound(new ApiResponse(404, "No Topic is found!"));
-            }
-
             return Ok(new ApiOkResponse(topics));
         }
 
-        [HttpGet("[action]")]
-        public IActionResult GetSections()
+        [HttpPost("[action]")]
+        public IActionResult Add([FromBody]TopicModel model)
         {
-            var sections = _topicService.GetSections();
+            var topic = _topicService.Add(model);
 
-            if (sections.ResultType == ServiceResultType.Fail)
-            {
-                return NotFound(new ApiResponse(404, "No Section is found!"));
-            }
-
-            return Ok(new ApiOkResponse(sections));
+            return Ok(new ApiOkResponse(topic));
         }
+        
+        [HttpPost("[action]")]
+        public IActionResult Edit([FromBody]TopicModel model)
+        {
+            var topic = _topicService.Edit(model);
+
+            return Ok(new ApiOkResponse(topic));
+        }
+        
+        [HttpPost("[action]/{id}")]
+        public IActionResult Delete([FromRoute]int id)
+        {
+            var topic = _topicService.Delete(id);
+
+            return Ok(new ApiOkResponse(topic));
+        }
+
     }
 }

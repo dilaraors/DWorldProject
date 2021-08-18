@@ -26,10 +26,11 @@ namespace DWorldProject.Controllers
         }
 
 
-        [HttpGet("[action]/{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        [HttpGet("[action]")]
+        public IActionResult Get()
         {
-            var user = _userService.GetById(id);
+            var userId = GetUserIdFromContext();
+            var user = _userService.GetById(userId);
 
             if (user == null)
             {
@@ -39,10 +40,11 @@ namespace DWorldProject.Controllers
             return Ok(new ApiOkResponse(user.Data));
         }
 
-        [HttpPost("[action]/{id}")]
-        public async Task<IActionResult> UploadProfileImage(IFormFile file, int id)
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UploadProfileImage(IFormFile file)
         {
-            var result = await _userService.UploadProfileImageToS3(file, id);
+            var userId = GetUserIdFromContext();
+            var result = await _userService.UploadProfileImageToS3(file, userId);
 
             if (result.ResultType == ServiceResultType.Fail)
             {
@@ -52,10 +54,11 @@ namespace DWorldProject.Controllers
             return Ok(new ApiOkResponse(result.Data));
         }
 
-        [HttpGet("[action]/{id}")]
-        public IActionResult GetProfileImage(int id)
+        [HttpGet("[action]")]
+        public IActionResult GetProfileImage()
         {
-            var result = _userService.GetProfileImage(id);
+            var userId = GetUserIdFromContext();
+            var result = _userService.GetProfileImage(userId);
 
             if (result.ResultType == ServiceResultType.Fail)
             {
@@ -68,7 +71,8 @@ namespace DWorldProject.Controllers
         [HttpPost("[action]")]
         public IActionResult UpdateUserInfo([FromBody]UserRequestModel model)
         {
-            var result = _userService.UpdateUserInfo(model);
+            var userId = GetUserIdFromContext();
+            var result = _userService.UpdateUserInfo(model, userId);
 
             if (result.ResultType == ServiceResultType.Fail)
             {

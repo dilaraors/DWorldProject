@@ -15,40 +15,48 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using DWorldProject.Utils.ErrorCodes;
+using Microsoft.Extensions.Configuration;
 
 namespace DWorldProject.Services
 {
     public class AccountService : IAccountService
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
         private readonly ILogger _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
 
-        public AccountService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IUserRepository userRepository,
-            IMapper mapper, ILogger<BlogPostService> logger, IHttpContextAccessor httpContextAccessor)
+        public AccountService(IUserRepository userRepository,
+            IMapper mapper, ILogger<BlogPostService> logger, IConfiguration configuration)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
             _userRepository = userRepository;
             _mapper = mapper;
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
         }
 
-        public async Task<ServiceResult<RegisterModel>> Register(RegisterModel model)
+        public ServiceResult<UserResponseModel> Register(UserRequestModel model)
         {
-            var serviceResult = new ServiceResult<RegisterModel>();
+            var serviceResult = new ServiceResult<UserResponseModel>();
             try
             {
-                var user = new IdentityUser
+                var usernameExist = _userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.UserName == model.UserName);
+                if (usernameExist != null)
                 {
-                    UserName = model.UserName,
-                    Email = model.Email,
-                };
+                    serviceResult.ErrorCode = (int)UserErrorCodes.AlreadyExists;
+                    throw new Exception("Username exist");
+                }
+
+                var emailExist = _userRepository.GetSingle(u => u.Email == model.Email && u.IsActive && !u.IsDeleted);
+                if (emailExist != null)
+                {
+                    serviceResult.ErrorCode = (int)UserErrorCodes.AlreadyExists;
+                    throw new Exception("Email exist");
+                }
+
 
                 string salt = HashCalculator.GenerateSalt();
                 string hashedPassword = HashCalculator.HashPasswordWithSalt(model.Password, salt);
@@ -57,27 +65,18 @@ namespace DWorldProject.Services
                 {
                     Email = model.Email,
                     Password = hashedPassword,
+                    PasswordSalt = salt,
                     Name = model.Name,
                     Surname = model.Surname,
                     UserName = model.UserName,
                     RoleId = 1
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                 _userRepository.AddWithCommit(userEntity);
 
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _userRepository.AddWithCommit(userEntity);
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    throw new Exception(error.Description);
-                }
-
-                serviceResult.Data = model;
-                serviceResult.ResultType = ServiceResultType.Success;
+                 serviceResult.Data = _mapper.Map<UserResponseModel>(userEntity);
+                 serviceResult.ResultType = ServiceResultType.Success;
+                 _logger.LogInformation($"Successful Register. Register Model: {JsonSerializer.Serialize<User>(userEntity)}");
             }
             catch (Exception ex)
             {
@@ -88,104 +87,83 @@ namespace DWorldProject.Services
             return serviceResult;
         }
 
-        public async Task<ServiceResult<LoginModel>> Login(UserRequestModel model)
+        public ServiceResult<LoginModel> Login(UserRequestModel model)
         {
             var serviceResult = new ServiceResult<LoginModel>();
             try
             {
-                var result = new SignInResult();
+                var user = _userRepository.AllIncludingAsQueryable(u => u.Role).FirstOrDefault(u => u.IsActive && !u.IsDeleted && (u.UserName == model.UserName || u.Email == model.UserName));
 
-                if (!string.IsNullOrEmpty(model.Email))
+                if (user == null)
                 {
-                    result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, true, false);
-                }
-                else
-                {
-                    result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, true, false);
+                    serviceResult.ErrorCode = (int)UserErrorCodes.IncorrectUsername;
+                    throw new Exception("Username is incorrect");
                 }
 
-                if (!result.Succeeded)
+                var hashedPassword = HashCalculator.HashPasswordWithSalt(model.Password, user.PasswordSalt);
+
+                if (hashedPassword != user.Password)
                 {
-                    throw new Exception("Login is unsuccessfull!");
-                }
-                else
-                {
-                    var userModel = _userRepository.FindBy(u => u.IsActive && !u.IsDeleted);
-                    User umodel = new User();
-
-                    if (!string.IsNullOrEmpty(model.UserName))
-                    {
-                        umodel = userModel.FirstOrDefault(u => u.UserName == model.UserName);
-                    }
-                    else
-                    {
-                        umodel = userModel.FirstOrDefault(u => u.UserName == model.Email);
-                    }
-
-                    var user = new IdentityUser()
-                    {
-                        Id = umodel?.Id.ToString(),
-                        Email = umodel?.Email,
-                        UserName = umodel?.UserName
-                    };
-
-                    var claim = new Claim("UserId", user.Id.ToString());
-                    await _userManager.AddClaimAsync(user, claim);
-                    await _signInManager.CreateUserPrincipalAsync(user);
-
-                    var userEntity =_userRepository.GetSingle(u => u.IsActive && !u.IsDeleted && u.UserName == model.UserName);
-                    var userViewModel = _mapper.Map<UserResponseModel>(userEntity);
-                    var jwtToken = new JwtSecurityTokenHandler().WriteToken(CreateJwt(userViewModel));
-
-                    serviceResult.Data = new LoginModel()
-                    {
-                        JwtToken = jwtToken,
-                        User = userViewModel
-                    };
-                    serviceResult.ResultType = ServiceResultType.Success;
+                    serviceResult.ErrorCode = (int)UserErrorCodes.WrongPassword;
+                    throw new Exception("Password is wrong");
                 }
 
-            }
-            catch (Exception ex)
-            {
-                serviceResult.ResultType = ServiceResultType.Fail;
-                serviceResult.Message = ex.Message;
-            }
+                var userViewModel = _mapper.Map<UserResponseModel>(user);
+                var jwtToken = new JwtSecurityTokenHandler().WriteToken(CreateJwt(user));
 
-            return serviceResult;
-        }
-
-        public async Task<ServiceResult<bool>> Logout()
-        {
-            var serviceResult = new ServiceResult<bool>();
-            try
-            {
-                await _signInManager.SignOutAsync();
-
-                serviceResult.Data = true;
+                serviceResult.Data = new LoginModel()
+                {
+                    JwtToken = jwtToken,
+                    User = userViewModel
+                };
                 serviceResult.ResultType = ServiceResultType.Success;
+                _logger.LogInformation($"Successful Login. Login Model: {JsonSerializer.Serialize(model)}");
+
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                serviceResult.Data = false;
                 serviceResult.ResultType = ServiceResultType.Fail;
-                serviceResult.Message = ex.Message;
+                serviceResult.Message = e.Message;
+                serviceResult.ErrorCode = serviceResult.ErrorCode ?? (int)BaseErrorCodes.BadRequest;
+                _logger.LogError($"Unsuccessful Login. Login Model: {JsonSerializer.Serialize(model)}, ErrorCode: {serviceResult.ErrorCode}, ErrorMessage: {e.Message}");
+
             }
 
             return serviceResult;
         }
 
-        private static JwtSecurityToken CreateJwt(UserResponseModel user)
+        //public async Task<ServiceResult<bool>> Logout()
+        //{
+        //    var serviceResult = new ServiceResult<bool>();
+        //    try
+        //    {
+        //        await _signInManager.SignOutAsync();
+
+        //        serviceResult.Data = true;
+        //        serviceResult.ResultType = ServiceResultType.Success;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        serviceResult.Data = false;
+        //        serviceResult.ResultType = ServiceResultType.Fail;
+        //        serviceResult.Message = ex.Message;
+        //    }
+
+        //    return serviceResult;
+        //}
+
+        private JwtSecurityToken CreateJwt(User user)
         {
             var claims = new[]
             {
                 new Claim("UserId", user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Id.ToString()),
-                new Claim("ApplicationName", "DWorldApp")
+                new Claim("ApplicationName", "DWorldApp"),
+                new Claim (ClaimTypes.Role, user.Role.Name)
             };
 
-            var loginKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecureKey"));
+            var loginKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["TokenSecretKey"]));
 
             var token = new JwtSecurityToken(
                 issuer: "DWorld",

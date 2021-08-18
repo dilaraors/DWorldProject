@@ -11,6 +11,6 @@ namespace DWorldProject.Services.Abstact
         ServiceResult<UserResponseModel> GetDWUser(string contextUserId);
         Task<ServiceResult<bool>> UploadProfileImageToS3(IFormFile file, int id);
         ServiceResult<string> GetProfileImage(int id);
-        ServiceResult<UserResponseModel> UpdateUserInfo(UserRequestModel model);
+        ServiceResult<UserResponseModel> UpdateUserInfo(UserRequestModel model, int userId);
     }
 }

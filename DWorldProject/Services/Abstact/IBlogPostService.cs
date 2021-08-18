@@ -9,8 +9,9 @@ namespace DWorldProject.Services.Abstact
     {
         Task<ServiceResult<List<BlogPostResponseModel>>> Get();
         Task<ServiceResult<BlogPostResponseModel>> GetById(int id);
-        ServiceResult<BlogPostResponseModel> Update(BlogPostRequestModel blogPostModel);
+        Task<ServiceResult<BlogPostResponseModel>> Update(BlogPostRequestModel blogPostModel);
         Task<ServiceResult<BlogPostResponseModel>> Add(BlogPostRequestModel blogPostModel);
         ServiceResult<BlogPostResponseModel> Delete(int id);
+        Task<ServiceResult<List<BlogPostResponseModel>>> GetBySection(int sectionId, string topicName);
     }
 }

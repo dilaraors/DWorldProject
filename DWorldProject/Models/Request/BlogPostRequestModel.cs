@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using DWorldProject.Enums;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace DWorldProject.Models.Request
 {
@@ -12,9 +11,15 @@ namespace DWorldProject.Models.Request
         public int? TopicId { get; set; }
         public int? SectionId { get; set; }
         public IFormFile HeaderImageFile { get; set; }
-        public string HeaderImageUrl { get; set; }
+        public string HeaderImageURL { get; set; }
         public List<IFormFile> ImageGalleryFile { get; set; }
         public List<string> ImageGallery { get; set; }
         public string YouTubeVideoURL { get; set; }
+    }
+
+    public class BlogPostSectionRequestModel
+    {
+        public int SectionId { get; set; }
+        public string TopicName { get; set; }
     }
 }
